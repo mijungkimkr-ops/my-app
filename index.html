@@ -363,39 +363,36 @@ body {
 .w-name { flex-shrink: 0; }
 .w-time { color: #444; white-space: nowrap; font-weight: 700; margin-left: 18px; }
 
-/* 우리들 모습 이미지 — 가로 85% 고정 */
+/* 우리들 모습 전용 */
 .bul-row-moments {
   display: grid;
   grid-template-columns: 52px 1fr;
   gap: 7px;
   align-items: start;
 }
-
 .bul-row-moments .bul-label {
   width: 52px;
   min-width: 52px;
 }
-
 .bul-content-moments {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-  padding-top: 0;
 }
-
 .bul-moments-img {
-  width: 320px !important;
-  height: 180px;
+  width: 250px;
+  height: 150px;
   display: block;
   border-radius: 4px;
   object-fit: cover;
-  margin: 0 !important;
-  max-width: none;
+  margin: 0;
+  max-width: 100%;
 }
+
 /* 월계획 */
 .plan-list { font-size: 11px; font-weight: 700; color: #222; line-height: 1.65; }
 
-/* 푸터 — 프레임 하단 고정, 배경 없이 검정 텍스트 */
+/* 푸터 */
 #card-footer-text {
   position: absolute; bottom: 0; left: 0; right: 0;
   padding: 4px 14px 6px;
@@ -468,11 +465,9 @@ body {
 
 <div class="workspace">
 
-  <!-- ══════ EDITOR ══════ -->
   <div class="panel">
     <div class="panel-title">✏️ 내용 편집</div>
 
-    <!-- API 키 설정 -->
     <details class="settings-bar" id="settings-details">
       <summary>⚙️ Claude API 설정 <span class="api-status" id="api-status"></span></summary>
       <div class="settings-content">
@@ -483,7 +478,6 @@ body {
       </div>
     </details>
 
-    <!-- 자동 채우기 -->
     <div class="autofill-area">
       <div class="autofill-title">✨ 회의록 이미지로 자동 입력</div>
       <button class="autofill-btn" id="autofill-btn" onclick="document.getElementById('autofill-img-input').click()">
@@ -494,7 +488,6 @@ body {
       <div class="autofill-result" id="autofill-result"></div>
     </div>
 
-    <!-- 프레임 선택 -->
     <div class="sec-header">
       <span>📁 배경 프레임</span>
       <span class="saved-badge" id="frames-saved-badge" style="display:none;">💾 저장됨</span>
@@ -507,7 +500,6 @@ body {
       <div style="font-size:12px;color:#aaa;padding:8px 0;">이미지를 추가하면 자동 저장됩니다</div>
     </div>
 
-    <!-- 기본 정보 -->
     <div class="sec-header"><span>📅 기본 정보</span></div>
     <div class="row2">
       <div class="field"><label>날짜</label>
@@ -518,7 +510,6 @@ body {
       </div>
     </div>
 
-    <!-- 설교 -->
     <div class="sec-header"><span>📖 설교</span></div>
     <div class="field"><label>설교 제목</label>
       <input type="text" id="f-sermon" value="참된 예배를 드려요" oninput="onContentChange()">
@@ -527,7 +518,6 @@ body {
       <input type="text" id="f-scripture" value="왕상 13:1-10" oninput="onContentChange()">
     </div>
 
-    <!-- 활동 & 기도 -->
     <div class="sec-header"><span>🙏 활동 & 기도</span></div>
     <div class="field"><label>2부활동</label>
       <input type="text" id="f-activity" value="반별 공과" oninput="onContentChange()">
@@ -541,7 +531,6 @@ body {
       </div>
     </div>
 
-    <!-- 예배순서 -->
     <div class="sec-header">
       <span>⏰ 예배순서</span>
       <label class="toggle-switch">
@@ -562,7 +551,6 @@ body {
       <div style="font-size:11px;color:#aaa;margin-top:5px;">※ 고정 내용 — 끄면 주보에서 빠집니다</div>
     </div>
 
-    <!-- 우리들 모습 -->
     <div class="sec-header" style="margin-top:16px;">
       <span>📸 우리들 모습</span>
       <label class="toggle-switch">
@@ -579,7 +567,6 @@ body {
       </div>
     </div>
 
-    <!-- 월계획 -->
     <div class="sec-header"><span>📆 월계획</span></div>
     <div class="row2" style="margin-bottom:8px;">
       <div class="field"><label>월 이름</label>
@@ -589,19 +576,16 @@ body {
     <div class="plan-rows" id="plan-rows"></div>
     <button class="add-row-btn" onclick="addPlanRow()">＋ 계획 추가</button>
 
-    <!-- 광고 -->
     <div class="sec-header"><span>📢 광고</span></div>
     <div class="notice-rows" id="notice-rows"></div>
     <button class="add-row-btn" onclick="addNoticeRow()">＋ 광고 추가</button>
 
-    <!-- 하단 안내 -->
     <div class="sec-header"><span>📌 하단 안내</span></div>
     <div class="field">
       <textarea id="f-footer" rows="2" oninput="onContentChange()">예배 10분전에 도착하여 찬양과 기도로 예배를 준비해요.
 성경책, 큐티, 설교노트를 꼭 가지고 다닐 수 있게 챙겨주세요 :)</textarea>
     </div>
 
-    <!-- 위치 조정 -->
     <div class="sec-header"><span>⚙️ 위치 / 간격 조정</span></div>
     <button class="calib-toggle" onclick="toggleCalib()">▾ 세밀 조정 (필요할 때만)</button>
     <button class="calib-toggle" onclick="resetCalib()" style="margin-top:4px;color:#e57373;border-color:#f8d0d0;">↺ 기본값으로 초기화</button>
@@ -638,7 +622,6 @@ body {
     <button class="btn-export" onclick="exportImage()">📥 PNG로 저장하기</button>
   </div>
 
-  <!-- ══════ PREVIEW ══════ -->
   <div class="preview-panel panel" style="padding:20px;">
     <div class="panel-title">👁️ 미리보기</div>
     <div id="card-wrapper">
@@ -662,7 +645,6 @@ body {
   <div id="loading-text">처리 중...</div>
 </div>
 
-<!-- 이미지 저장 모달 -->
 <div class="img-modal-overlay" id="img-modal" onclick="closeImgModal(event)">
   <img id="img-modal-img" src="" alt="주보 이미지">
   <div class="img-modal-hint" id="img-modal-hint"></div>
@@ -673,9 +655,6 @@ body {
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════
 let frames = [];
 let activeFrame = -1;
 let momentsImageDataUrl = null;
@@ -703,9 +682,6 @@ const WORSHIP_ORDER = [
 
 let calib = { top: 30.5, left: 8, width: 90, bottom: 5.5, pad: 14, gap: 16, fontsize: 11.5, footerBottom: 1.3 };
 
-// ═══════════════════════════════════════════
-//  API KEY
-// ═══════════════════════════════════════════
 function saveApiKey() {
   const key = document.getElementById('api-key-input').value.trim();
   if (!key) { alert('API 키를 입력해 주세요.'); return; }
@@ -723,9 +699,6 @@ function loadApiKey() {
   }
 }
 
-// ═══════════════════════════════════════════
-//  AUTO FILL FROM IMAGE (Claude API)
-// ═══════════════════════════════════════════
 async function autoFillFromImage(input) {
   if (!input.files[0]) return;
   const apiKey = localStorage.getItem('bulletin_api_key');
@@ -818,9 +791,6 @@ JSON만 반환하고 다른 텍스트는 절대 포함하지 마세요.
   }
 }
 
-// ═══════════════════════════════════════════
-//  FRAME MANAGEMENT + localStorage
-// ═══════════════════════════════════════════
 function compressImage(dataUrl, maxWidth = 600) {
   return new Promise(res => {
     const img = new Image();
@@ -931,9 +901,6 @@ function deleteFrame(e, i) {
   saveFramesToStorage();
 }
 
-// ═══════════════════════════════════════════
-//  MOMENTS IMAGE
-// ═══════════════════════════════════════════
 function loadMomentsImage(input) {
   if (!input.files[0]) return;
   const r = new FileReader();
@@ -954,9 +921,6 @@ function clearMomentsImage() {
   onContentChange();
 }
 
-// ═══════════════════════════════════════════
-//  PLAN ROWS
-// ═══════════════════════════════════════════
 function renderPlanRows() {
   const c = document.getElementById('plan-rows');
   c.innerHTML = '';
@@ -970,9 +934,6 @@ function renderPlanRows() {
 function addPlanRow() { planData.push(''); renderPlanRows(); onContentChange(); }
 function removePlanRow(i) { planData.splice(i, 1); renderPlanRows(); onContentChange(); }
 
-// ═══════════════════════════════════════════
-//  NOTICE ROWS
-// ═══════════════════════════════════════════
 function renderNoticeRows() {
   const c = document.getElementById('notice-rows');
   c.innerHTML = '';
@@ -993,9 +954,6 @@ function renderNoticeRows() {
 function addNoticeRow() { noticeData.push({ title: '', body: '' }); renderNoticeRows(); onContentChange(); }
 function removeNoticeRow(i) { noticeData.splice(i, 1); renderNoticeRows(); onContentChange(); }
 
-// ═══════════════════════════════════════════
-//  CONTENT PERSISTENCE
-// ═══════════════════════════════════════════
 function onContentChange() {
   updatePreview();
   saveContentToStorage();
@@ -1062,9 +1020,6 @@ function loadContentFromStorage() {
   } catch(e) { console.warn('콘텐츠 불러오기 실패:', e); return false; }
 }
 
-// ═══════════════════════════════════════════
-//  CALIBRATION
-// ═══════════════════════════════════════════
 function toggleCalib() { document.getElementById('calib-panel').classList.toggle('open'); }
 
 const DEFAULT_CALIB = { top: 30.5, left: 8, width: 90, bottom: 5.5, pad: 14, gap: 16, fontsize: 11.5, footerBottom: 1.3 };
@@ -1114,9 +1069,6 @@ function applyCalib() {
   updatePreview();
 }
 
-// ═══════════════════════════════════════════
-//  PREVIEW RENDER
-// ═══════════════════════════════════════════
 function updatePreview() {
   const date       = document.getElementById('f-date').value;
   const offering   = document.getElementById('f-offering').value;
@@ -1159,11 +1111,12 @@ function updatePreview() {
     const imgContent = momentsImageDataUrl
       ? `<img class="bul-moments-img" src="${momentsImageDataUrl}">`
       : `<span style="color:#bbb;font-size:${fsB}px;font-weight:700;">사진을 업로드해 주세요</span>`;
- momentsHtml = `
-  <div class="bul-row-moments">
-    <div class="bul-label">우리들<br>모습</div>
-    <div class="bul-content bul-content-moments">${imgContent}</div>
-  </div>`;
+    momentsHtml = `
+    <div class="bul-row-moments" style="margin-bottom:${gap}px;">
+      <div class="bul-label">우리들<br>모습</div>
+      <div class="bul-content bul-content-moments">${imgContent}</div>
+    </div>`;
+  }
 
   const planHtml = planData.filter(p => p).map(p => `<div>${p}</div>`).join('');
 
@@ -1221,9 +1174,6 @@ function updatePreview() {
   `;
 }
 
-// ═══════════════════════════════════════════
-//  EXPORT
-// ═══════════════════════════════════════════
 async function exportImage() {
   if (activeFrame < 0) { alert('먼저 프레임 이미지를 선택해 주세요!'); return; }
   const loading = document.getElementById('loading-overlay');
@@ -1267,14 +1217,11 @@ function closeImgModal(e) {
   }
 }
 
-// ═══════════════════════════════════════════
-//  INIT — 저장된 데이터 복원
-// ═══════════════════════════════════════════
 loadApiKey();
 renderPlanRows();
 renderNoticeRows();
-const hadContent = loadContentFromStorage();
-const hadFrames  = loadFramesFromStorage();
+loadContentFromStorage();
+const hadFrames = loadFramesFromStorage();
 applyCalib();
 if (!hadFrames) updatePreview();
 </script>
