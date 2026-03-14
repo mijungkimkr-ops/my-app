@@ -364,18 +364,33 @@ body {
 .w-time { color: #444; white-space: nowrap; font-weight: 700; margin-left: 18px; }
 
 /* 우리들 모습 이미지 — 가로 85% 고정 */
-.bul-row-top {
+.bul-row-moments {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 7px;
+  align-items: start;
+}
+
+.bul-row-moments .bul-label {
+  width: 52px;
+  min-width: 52px;
+}
+
+.bul-content-moments {
+  display: flex;
   align-items: flex-start;
+  justify-content: flex-start;
+  padding-top: 0;
 }
 
 .bul-moments-img {
-  width: 320px;
+  width: 320px !important;
   height: 100px;
   display: block;
   border-radius: 4px;
   object-fit: cover;
-  margin: 0;
-  max-width: 100%;
+  margin: 0 !important;
+  max-width: none;
 }
 /* 월계획 */
 .plan-list { font-size: 11px; font-weight: 700; color: #222; line-height: 1.65; }
@@ -1144,12 +1159,11 @@ function updatePreview() {
     const imgContent = momentsImageDataUrl
       ? `<img class="bul-moments-img" src="${momentsImageDataUrl}">`
       : `<span style="color:#bbb;font-size:${fsB}px;font-weight:700;">사진을 업로드해 주세요</span>`;
-   momentsHtml = `
-    <div class="bul-row bul-row-top">
-      <div class="bul-label">우리들<br>모습</div>
-      <div class="bul-content">${imgContent}</div>
-    </div>`;
-  }
+ momentsHtml = `
+  <div class="bul-row-moments">
+    <div class="bul-label">우리들<br>모습</div>
+    <div class="bul-content bul-content-moments">${imgContent}</div>
+  </div>`;
 
   const planHtml = planData.filter(p => p).map(p => `<div>${p}</div>`).join('');
 
