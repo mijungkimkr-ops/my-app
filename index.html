@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>하트온 초등1부 주보 만들기</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  background: #f4f6f8;
+  min-height: 100vh;
+  color: #333;
+}
+
+/* ─── HEADER ─── */
+.app-bar {
+  background: linear-gradient(135deg, #6dbe6d, #4caf50);
+  color: white;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.15);
+}
+.app-bar h1 { font-size: 18px; font-weight: 800; }
+.app-bar span { font-size: 13px; opacity: .8; }
+
+/* ─── LAYOUT ─── */
+.workspace {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1300px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* ─── PANEL ─── */
+.panel {
+  background: white;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+}
+.panel-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #444;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sec-header {
+  font-size: 11px;
+  font-weight: 800;
+  color: #888;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  margin: 16px 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ─── API KEY SETTINGS ─── */
+.settings-bar {
+  background: #f8f8f8;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  font-size: 12px;
+}
+.settings-bar summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: #666;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.settings-bar summary::-webkit-details-marker { display: none; }
+.settings-content {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.settings-content label { font-size: 11px; color: #888; }
+.settings-content input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1.5px solid #ddd;
+  border-radius: 7px;
+  font-size: 12px;
+  font-family: monospace;
+  background: white;
+}
+.settings-content input:focus { outline: none; border-color: #6dbe6d; }
+.api-save-btn {
+  padding: 6px 14px;
+  background: #6dbe6d;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-end;
+  font-family: inherit;
+}
+.api-status { font-size: 11px; color: #6dbe6d; font-weight: 600; }
+
+/* ─── AUTO FILL ─── */
+.autofill-area {
+  background: linear-gradient(135deg, #eef4ff, #e8f5e9);
+  border: 1.5px solid #b8d4fb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.autofill-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #3a60c0;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.autofill-btn {
+  width: 100%;
+  padding: 9px;
+  background: linear-gradient(135deg, #4a7cf7, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: opacity .15s;
+}
+.autofill-btn:hover { opacity: .9; }
+.autofill-btn:disabled { opacity: .5; cursor: default; }
+.autofill-note { font-size: 10.5px; color: #6080c0; margin-top: 6px; line-height: 1.5; }
+.autofill-result {
+  margin-top: 8px;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: none;
+}
+.autofill-result.ok { background: #e8f5e9; color: #2e7d32; display: block; }
+.autofill-result.err { background: #ffeef0; color: #c62828; display: block; }
+
+/* ─── FORM ─── */
+.field { margin-bottom: 10px; }
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 4px;
+}
+.field input, .field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #333;
+  background: #fafafa;
+  transition: border-color .2s;
+}
+.field input:focus, .field textarea:focus {
+  outline: none;
+  border-color: #6dbe6d;
+  background: white;
+}
+.field textarea { resize: vertical; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ─── FRAME PICKER ─── */
+.frame-upload-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: #f0faf0;
+  border: 2px dashed #6dbe6d;
+  border-radius: 10px;
+  color: #4caf50;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: background .2s;
+  margin-bottom: 10px;
+}
+.frame-upload-btn:hover { background: #e4f7e4; }
+.frame-thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+.frame-thumb {
+  width: 70px; height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid transparent;
+  position: relative;
+  transition: border-color .15s, transform .15s;
+  background: #f0f0f0;
+}
+.frame-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.frame-thumb.active { border-color: #4caf50; transform: scale(1.05); }
+.frame-thumb .frame-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,.55);
+  color: white; font-size: 9px; font-weight: 700;
+  text-align: center; padding: 3px;
+}
+.frame-thumb .del-frame {
+  position: absolute; top: 2px; right: 2px;
+  background: rgba(200,0,0,.75); color: white; border: none;
+  border-radius: 50%; width: 16px; height: 16px;
+  font-size: 10px; cursor: pointer; display: none;
+  align-items: center; justify-content: center; line-height: 1;
+}
+.frame-thumb:hover .del-frame { display: flex; }
+.saved-badge {
+  font-size: 10px; color: #6dbe6d; font-weight: 700;
+  background: #e8f5e9; padding: 2px 7px; border-radius: 10px;
+}
+
+/* ─── TOGGLE ─── */
+.toggle-switch { position: relative; display: inline-flex; align-items: center; cursor: pointer; flex-shrink: 0; }
+.toggle-switch input { display: none; }
+.toggle-track { width: 40px; height: 22px; background: #ccc; border-radius: 11px; position: relative; transition: background .2s; display: block; }
+.toggle-thumb { position: absolute; width: 16px; height: 16px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform .2s; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+.toggle-switch input:checked + .toggle-track { background: #6dbe6d; }
+.toggle-switch input:checked + .toggle-track .toggle-thumb { transform: translateX(18px); }
+
+/* ─── WORSHIP FIXED PREVIEW ─── */
+.worship-fixed-preview {
+  background: #f8f8f8; border: 1px solid #e8e8e8;
+  border-radius: 8px; padding: 10px 12px;
+  font-size: 11.5px; font-weight: 700;
+}
+.wfp-row { display: flex; justify-content: space-between; line-height: 2.4; }
+.wfp-time { color: #666; }
+
+/* ─── IMAGE UPLOAD ZONE ─── */
+.img-upload-zone {
+  display: block; width: 100%; padding: 14px;
+  background: #f8f8f8; border: 2px dashed #ccc;
+  border-radius: 10px; text-align: center;
+  color: #aaa; font-size: 13px; cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.img-upload-zone:hover { background: #f0f5ff; border-color: #7ca8f0; }
+.worship-img-thumb-wrap { display: none; position: relative; margin-top: 8px; }
+.worship-img-thumb-wrap.show { display: block; }
+.worship-img-thumb-wrap img { width: 100%; border-radius: 8px; display: block; }
+.worship-img-thumb-wrap .clear-img-btn {
+  position: absolute; top: 6px; right: 6px;
+  background: rgba(200,0,0,.8); color: white; border: none;
+  border-radius: 6px; padding: 4px 8px; font-size: 11px;
+  font-weight: 700; cursor: pointer;
+}
+
+/* ─── PLAN ROWS ─── */
+.plan-rows { display: flex; flex-direction: column; gap: 5px; }
+.plan-row { display: flex; gap: 6px; align-items: center; }
+.plan-row input { flex: 1; }
+
+.notice-rows { display: flex; flex-direction: column; gap: 8px; }
+.notice-row { display: flex; flex-direction: column; gap: 4px; background: #f9f9f9; border-radius: 8px; padding: 8px 10px; position: relative; }
+.notice-row-header { display: flex; gap: 6px; align-items: center; }
+.notice-row-header input { flex: 1; font-weight: 700; }
+.notice-row textarea { font-size: 12px; color: #555; resize: vertical; }
+.notice-rm-btn { background: none; border: none; color: #ccc; font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1; flex-shrink: 0; }
+.notice-rm-btn:hover { color: #e57373; }
+.rm-btn { background: #fee; border: none; color: #d44; border-radius: 6px; width: 24px; height: 24px; cursor: pointer; font-size: 14px; flex-shrink: 0; }
+.add-row-btn {
+  font-size: 12px; color: #4caf50; background: none;
+  border: 1.5px dashed #6dbe6d; border-radius: 7px;
+  padding: 5px 10px; cursor: pointer; width: 100%;
+  margin-top: 4px; font-family: inherit;
+}
+.add-row-btn:hover { background: #f0faf0; }
+
+/* ─── CALIBRATION ─── */
+.calib-toggle {
+  font-size: 12px; color: #888; background: none;
+  border: 1px solid #ddd; border-radius: 6px;
+  padding: 5px 10px; cursor: pointer;
+  font-family: inherit; margin-top: 4px; width: 100%;
+}
+.calib-panel { display: none; margin-top: 10px; }
+.calib-panel.open { display: block; }
+.calib-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.calib-row label { width: 82px; color: #666; font-size: 12px; flex-shrink: 0; }
+.calib-row input[type=range] { flex: 1; }
+.calib-row span { width: 40px; text-align: right; font-size: 12px; color: #444; font-weight: 600; }
+
+/* ─── EXPORT ─── */
+.btn-export {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, #6dbe6d, #4caf50);
+  color: white; border: none; border-radius: 10px;
+  font-size: 15px; font-weight: 800; cursor: pointer;
+  margin-top: 16px; display: flex; align-items: center;
+  justify-content: center; gap: 8px;
+  box-shadow: 0 4px 14px rgba(76,175,80,.35);
+  transition: transform .15s, box-shadow .15s; font-family: inherit;
+}
+.btn-export:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(76,175,80,.4); }
+
+/* ─── PREVIEW ─── */
+.preview-panel { display: flex; flex-direction: column; align-items: center; gap: 16px; position: sticky; top: 20px; }
+
+/* ─── CARD ─── */
+#card-wrapper {
+  position: relative; width: 480px;
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0,0,0,.18);
+  background: #e8f5e9; min-height: 400px;
+}
+#frame-bg { display: block; width: 100%; height: auto; pointer-events: none; user-select: none; }
+#content-overlay { position: absolute; background: transparent; overflow: hidden; }
+
+/* ─── BULLETIN CONTENT ─── */
+.bul-inner { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+.bul-row { display: flex; align-items: baseline; gap: 7px; line-height: 1.45; flex-shrink: 0; }
+.bul-row-2col { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.bul-row-2col .bul-date-content { flex: 2; font-size: 11.5px; font-weight: 800; color: #222; }
+.bul-row-2col .bul-offering-content { flex: 1; font-size: 11.5px; font-weight: 800; color: #222; }
+
+.bul-label {
+  background: #7bc47a; color: white;
+  font-weight: 800; font-size: 10.5px;
+  padding: 3px 4px; border-radius: 5px;
+  flex-shrink: 0; width: 52px; min-width: 52px;
+  text-align: center;
+  letter-spacing: -.2px; word-break: keep-all; line-height: 1.35;
+}
+.bul-content { font-size: 11.5px; font-weight: 700; color: #222; line-height: 1.5; flex: 1; word-break: keep-all; }
+.bul-content b { font-weight: 800; }
+
+/* 예배순서 1컬럼 */
+.worship-list { display: flex; flex-direction: column; font-size: 10.5px; color: #222; font-weight: 700; }
+.worship-item { display: flex; align-items: baseline; line-height: 1.7; }
+.w-name { flex-shrink: 0; }
+.w-time { color: #444; white-space: nowrap; font-weight: 700; margin-left: 18px; }
+
+/* 우리들 모습 이미지 — 가로 꽉 차게 */
+.bul-moments-img { width: 100%; display: block; border-radius: 4px; object-fit: cover; height: 90px; }
+
+/* 월계획 */
+.plan-list { font-size: 11px; font-weight: 700; color: #222; line-height: 1.65; }
+
+/* 푸터 — 프레임 하단 고정, 배경 없이 검정 텍스트 */
+#card-footer-text {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 4px 14px 6px;
+  font-weight: 700; color: #111;
+  text-align: center; line-height: 1.25;
+  font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+}
+
+/* No-frame */
+.no-frame-msg {
+  position: absolute; inset: 0; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; color: #aaa; font-size: 15px; text-align: center; padding: 40px;
+}
+
+/* Loading */
+.loading-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.55); z-index: 999;
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 14px; color: white;
+  font-size: 16px; font-weight: 700;
+}
+.loading-overlay.show { display: flex; }
+.spinner { width: 38px; height: 38px; border: 4px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 960px) {
+  .workspace { grid-template-columns: 1fr; }
+  .preview-panel { position: static; }
+  #card-wrapper { width: 100%; max-width: 480px; }
+}
+
+/* ─── IMAGE MODAL ─── */
+.img-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.82); align-items: center; justify-content: center;
+  flex-direction: column; gap: 14px; padding: 20px;
+}
+.img-modal-overlay.show { display: flex; }
+.img-modal-overlay img {
+  max-width: 100%; max-height: 70vh; border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.5); display: block;
+}
+.img-modal-hint { color: rgba(255,255,255,.75); font-size: 13px; text-align: center; line-height: 1.6; }
+.img-modal-hint b { color: white; }
+.img-modal-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.img-modal-dl {
+  padding: 11px 22px; background: #4caf50; color: white;
+  border: none; border-radius: 9px; font-size: 14px; font-weight: 800;
+  cursor: pointer; font-family: inherit; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.img-modal-close {
+  padding: 11px 22px; background: rgba(255,255,255,.15); color: white;
+  border: 1.5px solid rgba(255,255,255,.3); border-radius: 9px;
+  font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+</style>
+</head>
+<body>
+
+<div class="app-bar">
+  <span style="font-size:22px">✝️</span>
+  <div>
+    <h1>하트온 초등1부 주보 만들기</h1>
+    <span>프레임 선택 → 내용 입력 → 이미지 저장</span>
+  </div>
+</div>
+
+<div class="workspace">
+
+  <!-- ══════ EDITOR ══════ -->
+  <div class="panel">
+    <div class="panel-title">✏️ 내용 편집</div>
+
+    <!-- API 키 설정 -->
+    <details class="settings-bar" id="settings-details">
+      <summary>⚙️ Claude API 설정 <span class="api-status" id="api-status"></span></summary>
+      <div class="settings-content">
+        <label>API Key (자동 저장 · 한 번만 입력하면 됩니다)</label>
+        <input type="password" id="api-key-input" placeholder="sk-ant-api03-...">
+        <button class="api-save-btn" onclick="saveApiKey()">저장</button>
+        <div style="font-size:10.5px;color:#aaa;line-height:1.5;">이 키는 이 기기에만 저장되며 외부로 전송되지 않습니다.<br>Anthropic 콘솔(console.anthropic.com)에서 발급하세요.</div>
+      </div>
+    </details>
+
+    <!-- 자동 채우기 -->
+    <div class="autofill-area">
+      <div class="autofill-title">✨ 회의록 이미지로 자동 입력</div>
+      <button class="autofill-btn" id="autofill-btn" onclick="document.getElementById('autofill-img-input').click()">
+        📄 교사 회의록 이미지 업로드
+      </button>
+      <input type="file" id="autofill-img-input" accept="image/*" style="display:none" onchange="autoFillFromImage(this)">
+      <div class="autofill-note">날짜 · 설교 · 봉헌 · 대표기도 4개 항목만 자동으로 채워집니다.</div>
+      <div class="autofill-result" id="autofill-result"></div>
+    </div>
+
+    <!-- 프레임 선택 -->
+    <div class="sec-header">
+      <span>📁 배경 프레임</span>
+      <span class="saved-badge" id="frames-saved-badge" style="display:none;">💾 저장됨</span>
+    </div>
+    <label class="frame-upload-btn" for="frame-file-input">
+      🖼️ 프레임 이미지 추가 (여러 장 가능)
+    </label>
+    <input type="file" id="frame-file-input" accept="image/*" multiple style="display:none" onchange="addFrames(this)">
+    <div class="frame-thumbs" id="frame-thumbs">
+      <div style="font-size:12px;color:#aaa;padding:8px 0;">이미지를 추가하면 자동 저장됩니다</div>
+    </div>
+
+    <!-- 기본 정보 -->
+    <div class="sec-header"><span>📅 기본 정보</span></div>
+    <div class="row2">
+      <div class="field"><label>날짜</label>
+        <input type="text" id="f-date" value="2026년 3월 15일 주일" oninput="onContentChange()">
+      </div>
+      <div class="field"><label>봉헌</label>
+        <input type="text" id="f-offering" value="권유주" oninput="onContentChange()">
+      </div>
+    </div>
+
+    <!-- 설교 -->
+    <div class="sec-header"><span>📖 설교</span></div>
+    <div class="field"><label>설교 제목</label>
+      <input type="text" id="f-sermon" value="참된 예배를 드려요" oninput="onContentChange()">
+    </div>
+    <div class="field"><label>성경 본문</label>
+      <input type="text" id="f-scripture" value="왕상 13:1-10" oninput="onContentChange()">
+    </div>
+
+    <!-- 활동 & 기도 -->
+    <div class="sec-header"><span>🙏 활동 & 기도</span></div>
+    <div class="field"><label>2부활동</label>
+      <input type="text" id="f-activity" value="반별 공과" oninput="onContentChange()">
+    </div>
+    <div class="row2">
+      <div class="field"><label>대표기도 (이번주)</label>
+        <input type="text" id="f-prayer-this" value="조윤후" oninput="onContentChange()">
+      </div>
+      <div class="field"><label>대표기도 (다음주)</label>
+        <input type="text" id="f-prayer-next" value="김우주" oninput="onContentChange()">
+      </div>
+    </div>
+
+    <!-- 예배순서 -->
+    <div class="sec-header">
+      <span>⏰ 예배순서</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggle-worship" checked onchange="onContentChange()">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </div>
+    <div id="worship-fixed-area">
+      <div class="worship-fixed-preview">
+        <div class="wfp-row"><span>1. 반별모임</span><span class="wfp-time">11:00–11:10</span></div>
+        <div class="wfp-row"><span>2. 기도/찬양/입례</span><span class="wfp-time">11:10–11:25</span></div>
+        <div class="wfp-row"><span>3. 신앙고백/대표기도</span><span class="wfp-time">11:25–11:30</span></div>
+        <div class="wfp-row"><span>4. 설교</span><span class="wfp-time">11:30–11:50</span></div>
+        <div class="wfp-row"><span>5. 봉헌/주기도문</span><span class="wfp-time">11:50–11:55</span></div>
+        <div class="wfp-row"><span>6. 암송/광고</span><span class="wfp-time">11:55–12:00</span></div>
+        <div class="wfp-row"><span>7. 공과공부/활동</span><span class="wfp-time">12:00–12:30</span></div>
+      </div>
+      <div style="font-size:11px;color:#aaa;margin-top:5px;">※ 고정 내용 — 끄면 주보에서 빠집니다</div>
+    </div>
+
+    <!-- 우리들 모습 -->
+    <div class="sec-header" style="margin-top:16px;">
+      <span>📸 우리들 모습</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggle-moments" onchange="onContentChange()">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </div>
+    <div id="moments-area" style="display:none;">
+      <label class="img-upload-zone" for="moments-img-input">🖼️ 사진을 클릭해서 선택하세요</label>
+      <input type="file" id="moments-img-input" accept="image/*" style="display:none" onchange="loadMomentsImage(this)">
+      <div class="worship-img-thumb-wrap" id="moments-img-thumb-wrap">
+        <img id="moments-img-thumb" src="" alt="우리들 모습">
+        <button class="clear-img-btn" onclick="clearMomentsImage()">✕ 제거</button>
+      </div>
+    </div>
+
+    <!-- 월계획 -->
+    <div class="sec-header"><span>📆 월계획</span></div>
+    <div class="row2" style="margin-bottom:8px;">
+      <div class="field"><label>월 이름</label>
+        <input type="text" id="f-plan-month" value="3월" oninput="onContentChange()">
+      </div>
+    </div>
+    <div class="plan-rows" id="plan-rows"></div>
+    <button class="add-row-btn" onclick="addPlanRow()">＋ 계획 추가</button>
+
+    <!-- 광고 -->
+    <div class="sec-header"><span>📢 광고</span></div>
+    <div class="notice-rows" id="notice-rows"></div>
+    <button class="add-row-btn" onclick="addNoticeRow()">＋ 광고 추가</button>
+
+    <!-- 하단 안내 -->
+    <div class="sec-header"><span>📌 하단 안내</span></div>
+    <div class="field">
+      <textarea id="f-footer" rows="2" oninput="onContentChange()">예배 10분전에 도착하여 찬양과 기도로 예배를 준비해요.
+성경책, 큐티, 설교노트를 꼭 가지고 다닐 수 있게 챙겨주세요 :)</textarea>
+    </div>
+
+    <!-- 위치 조정 -->
+    <div class="sec-header"><span>⚙️ 위치 / 간격 조정</span></div>
+    <button class="calib-toggle" onclick="toggleCalib()">▾ 세밀 조정 (필요할 때만)</button>
+    <button class="calib-toggle" onclick="resetCalib()" style="margin-top:4px;color:#e57373;border-color:#f8d0d0;">↺ 기본값으로 초기화</button>
+    <div class="calib-panel" id="calib-panel">
+      <div style="font-size:11px;color:#aaa;margin-bottom:8px;">▸ 위치</div>
+      <div class="calib-row"><label>위에서 (%)</label>
+        <input type="range" id="c-top" min="20" max="60" step="0.5" value="30.5" oninput="applyCalib()">
+        <span id="c-top-val">30.5%</span></div>
+      <div class="calib-row"><label>왼쪽 (%)</label>
+        <input type="range" id="c-left" min="0" max="20" step="0.5" value="8" oninput="applyCalib()">
+        <span id="c-left-val">8%</span></div>
+      <div class="calib-row"><label>너비 (%)</label>
+        <input type="range" id="c-width" min="70" max="100" step="0.5" value="90" oninput="applyCalib()">
+        <span id="c-width-val">90%</span></div>
+      <div class="calib-row"><label>아래 여백 (%)</label>
+        <input type="range" id="c-bottom" min="0" max="20" step="0.5" value="5.5" oninput="applyCalib()">
+        <span id="c-bottom-val">5.5%</span></div>
+      <div class="calib-row"><label>안쪽 패딩</label>
+        <input type="range" id="c-pad" min="4" max="28" step="1" value="14" oninput="applyCalib()">
+        <span id="c-pad-val">14px</span></div>
+      <div style="font-size:11px;color:#aaa;margin:10px 0 8px;">▸ 하단 안내 위치</div>
+      <div class="calib-row"><label>푸터 위치 (%)</label>
+        <input type="range" id="c-footer-bottom" min="0" max="15" step="0.5" value="1.3" oninput="applyCalib()">
+        <span id="c-footer-bottom-val">1.3%</span></div>
+      <div style="font-size:11px;color:#aaa;margin:10px 0 8px;">▸ 간격 / 글자</div>
+      <div class="calib-row"><label>항목 간 간격</label>
+        <input type="range" id="c-gap" min="1" max="24" step="1" value="16" oninput="applyCalib()">
+        <span id="c-gap-val">16px</span></div>
+      <div class="calib-row"><label>글자 크기</label>
+        <input type="range" id="c-fontsize" min="8" max="16" step="0.5" value="11.5" oninput="applyCalib()">
+        <span id="c-fontsize-val">11.5px</span></div>
+    </div>
+
+    <button class="btn-export" onclick="exportImage()">📥 PNG로 저장하기</button>
+  </div>
+
+  <!-- ══════ PREVIEW ══════ -->
+  <div class="preview-panel panel" style="padding:20px;">
+    <div class="panel-title">👁️ 미리보기</div>
+    <div id="card-wrapper">
+      <img id="frame-bg" src="" alt="" style="display:none;">
+      <div id="content-overlay">
+        <div class="bul-inner" id="bul-inner"></div>
+      </div>
+      <div id="card-footer-text"></div>
+      <div class="no-frame-msg" id="no-frame-msg">
+        <div style="font-size:32px">⬅️</div>
+        <div>왼쪽에서<br><b>프레임 이미지를 추가</b>해 주세요<br><br>한 번 추가하면<br>다음에도 자동으로 불러옵니다</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#aaa;text-align:center;">위치가 맞지 않으면 '세밀 조정'을 사용하세요</div>
+  </div>
+
+</div>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div id="loading-text">처리 중...</div>
+</div>
+
+<!-- 이미지 저장 모달 -->
+<div class="img-modal-overlay" id="img-modal" onclick="closeImgModal(event)">
+  <img id="img-modal-img" src="" alt="주보 이미지">
+  <div class="img-modal-hint" id="img-modal-hint"></div>
+  <div class="img-modal-btns">
+    <a class="img-modal-dl" id="img-modal-dl" download="">📥 이미지 저장</a>
+    <button class="img-modal-close" onclick="document.getElementById('img-modal').classList.remove('show')">✕ 닫기</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let frames = [];
+let activeFrame = -1;
+let momentsImageDataUrl = null;
+
+let planData = [
+  '2주차 - 반별 공과',
+  '3주차 - 성경적 성교육',
+  '4주차 - 반별공과',
+  '5주차 - 놀이활동',
+];
+
+let noticeData = [
+  { title: '3-4월 큐티책 안내', body: '가정에서 잘 할 수 있도록 챙겨주세요.\n(큐티책 구독료는 자녀 이름으로 교회계좌 입금 부탁드립니다.)' },
+];
+
+const WORSHIP_ORDER = [
+  { name: '1.반별모임',         time: '11:00-11:10' },
+  { name: '2.기도/찬양/입례',    time: '11:10-11:25' },
+  { name: '3.신앙고백/대표기도',  time: '11:25-11:30' },
+  { name: '4.설교',             time: '11:30-11:50' },
+  { name: '5.봉헌/주기도문',     time: '11:50-11:55' },
+  { name: '6.암송/광고',         time: '11:55-12:00' },
+  { name: '7.공과공부/활동',     time: '12:00-12:30' },
+];
+
+let calib = { top: 30.5, left: 8, width: 90, bottom: 5.5, pad: 14, gap: 16, fontsize: 11.5, footerBottom: 1.3 };
+
+// ═══════════════════════════════════════════
+//  API KEY
+// ═══════════════════════════════════════════
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key) { alert('API 키를 입력해 주세요.'); return; }
+  localStorage.setItem('bulletin_api_key', key);
+  document.getElementById('api-key-input').value = '•'.repeat(20);
+  document.getElementById('api-status').textContent = '✓ 저장됨';
+  document.getElementById('settings-details').open = false;
+}
+
+function loadApiKey() {
+  const key = localStorage.getItem('bulletin_api_key');
+  if (key) {
+    document.getElementById('api-key-input').value = '•'.repeat(20);
+    document.getElementById('api-status').textContent = '✓ 저장됨';
+  }
+}
+
+// ═══════════════════════════════════════════
+//  AUTO FILL FROM IMAGE (Claude API)
+// ═══════════════════════════════════════════
+async function autoFillFromImage(input) {
+  if (!input.files[0]) return;
+  const apiKey = localStorage.getItem('bulletin_api_key');
+  if (!apiKey) {
+    alert('먼저 ⚙️ Claude API 설정에서 API 키를 입력해 주세요.');
+    document.getElementById('settings-details').open = true;
+    input.value = '';
+    return;
+  }
+
+  const resultEl = document.getElementById('autofill-result');
+  const btn = document.getElementById('autofill-btn');
+  const loading = document.getElementById('loading-overlay');
+  document.getElementById('loading-text').textContent = 'AI가 회의록을 분석 중입니다...';
+  loading.classList.add('show');
+  btn.disabled = true;
+  resultEl.className = 'autofill-result';
+
+  try {
+    // 이미지를 base64로 읽기
+    const dataUrl = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = e => res(e.target.result);
+      r.onerror = rej;
+      r.readAsDataURL(input.files[0]);
+    });
+    input.value = '';
+
+    const mediaType = dataUrl.split(';')[0].split(':')[1];
+    const base64Data = dataUrl.split(',')[1];
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Data } },
+            { type: 'text', text: `이 이미지는 교회 초등부 교사 회의록입니다.
+"이번 주 준비사항" 섹션에서 아래 4가지만 추출해 주세요.
+JSON만 반환하고 다른 텍스트는 절대 포함하지 마세요.
+{
+  "date": "날짜 (예: 2026년 3월 15일 주일, '주일' 포함)",
+  "sermon": "설교 제목만 (/ 앞부분 또는 전체)",
+  "scripture": "성경 본문 (예: 왕상 13:1-10)",
+  "offering": "봉헌자 이름",
+  "prayerThis": "이번주 대표기도자 이름",
+  "prayerNext": "다음주 대표기도자 이름 (다음 주 준비사항에서)"
+}` }
+          ]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || `API 오류 (${response.status})`);
+    }
+
+    const result = await response.json();
+    const text = result.content[0].text.trim();
+    // JSON 파싱 (마크다운 코드블록 제거)
+    const jsonStr = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const data = JSON.parse(jsonStr);
+
+    // 폼 업데이트
+    if (data.date)        document.getElementById('f-date').value = data.date;
+    if (data.sermon)      document.getElementById('f-sermon').value = data.sermon;
+    if (data.scripture)   document.getElementById('f-scripture').value = data.scripture;
+    if (data.offering)    document.getElementById('f-offering').value = data.offering;
+    if (data.prayerThis)  document.getElementById('f-prayer-this').value = data.prayerThis;
+    if (data.prayerNext)  document.getElementById('f-prayer-next').value = data.prayerNext;
+
+    resultEl.textContent = `✅ 자동 입력 완료: 날짜·설교·봉헌·대표기도`;
+    resultEl.className = 'autofill-result ok';
+    onContentChange();
+
+  } catch (e) {
+    resultEl.textContent = `❌ 오류: ${e.message}`;
+    resultEl.className = 'autofill-result err';
+    console.error(e);
+  } finally {
+    loading.classList.remove('show');
+    btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════
+//  FRAME MANAGEMENT + localStorage
+// ═══════════════════════════════════════════
+function compressImage(dataUrl, maxWidth = 600) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const ratio = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      res(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.src = dataUrl;
+  });
+}
+
+function saveFramesToStorage() {
+  try {
+    const lite = frames.map(f => ({ name: f.name, dataUrl: f.dataUrl }));
+    localStorage.setItem('bulletin_frames', JSON.stringify(lite));
+    localStorage.setItem('bulletin_active_frame', String(activeFrame));
+    document.getElementById('frames-saved-badge').style.display = 'inline';
+  } catch(e) {
+    console.warn('프레임 저장 실패 (용량 초과):', e);
+    alert('이미지 용량이 너무 커서 저장에 실패했습니다. 이미지 크기를 줄여 주세요.');
+  }
+}
+
+function loadFramesFromStorage() {
+  try {
+    const saved = localStorage.getItem('bulletin_frames');
+    if (!saved) return false;
+    frames = JSON.parse(saved);
+    if (!frames.length) return false;
+    activeFrame = parseInt(localStorage.getItem('bulletin_active_frame') || '0');
+    if (activeFrame >= frames.length) activeFrame = 0;
+    renderFrameThumbs();
+    // 프레임 이미지 적용
+    const bg = document.getElementById('frame-bg');
+    bg.src = frames[activeFrame].dataUrl;
+    bg.style.display = 'block';
+    document.getElementById('no-frame-msg').style.display = 'none';
+    document.getElementById('frames-saved-badge').style.display = 'inline';
+    bg.onload = () => { applyCalib(); updatePreview(); };
+    return true;
+  } catch(e) {
+    console.warn('프레임 불러오기 실패:', e);
+    return false;
+  }
+}
+
+function addFrames(input) {
+  const files = Array.from(input.files);
+  Promise.all(files.map(f => new Promise(res => {
+    const r = new FileReader();
+    r.onload = async e => {
+      const compressed = await compressImage(e.target.result);
+      frames.push({ name: f.name.replace(/\.[^.]+$/, ''), dataUrl: compressed });
+      res();
+    };
+    r.readAsDataURL(f);
+  }))).then(() => {
+    renderFrameThumbs();
+    const newIdx = frames.length - files.length;
+    if (activeFrame === -1) selectFrame(newIdx);
+    saveFramesToStorage();
+  });
+  input.value = '';
+}
+
+function renderFrameThumbs() {
+  const c = document.getElementById('frame-thumbs');
+  if (!frames.length) {
+    c.innerHTML = '<div style="font-size:12px;color:#aaa;padding:8px 0;">이미지를 추가하면 자동 저장됩니다</div>';
+    return;
+  }
+  c.innerHTML = '';
+  frames.forEach((f, i) => {
+    const d = document.createElement('div');
+    d.className = 'frame-thumb' + (i === activeFrame ? ' active' : '');
+    d.innerHTML = `<img src="${f.dataUrl}" alt="${f.name}"><div class="frame-label">${f.name}</div><button class="del-frame" onclick="deleteFrame(event,${i})">✕</button>`;
+    d.onclick = () => selectFrame(i);
+    c.appendChild(d);
+  });
+}
+
+function selectFrame(i) {
+  activeFrame = i;
+  const bg = document.getElementById('frame-bg');
+  bg.src = frames[i].dataUrl;
+  bg.style.display = 'block';
+  document.getElementById('no-frame-msg').style.display = 'none';
+  bg.onload = () => { applyCalib(); updatePreview(); };
+  renderFrameThumbs();
+  localStorage.setItem('bulletin_active_frame', String(i));
+}
+
+function deleteFrame(e, i) {
+  e.stopPropagation();
+  frames.splice(i, 1);
+  if (activeFrame === i) {
+    activeFrame = frames.length > 0 ? 0 : -1;
+    if (activeFrame >= 0) selectFrame(0);
+    else {
+      document.getElementById('frame-bg').style.display = 'none';
+      document.getElementById('no-frame-msg').style.display = 'flex';
+    }
+  } else if (activeFrame > i) activeFrame--;
+  renderFrameThumbs();
+  saveFramesToStorage();
+}
+
+// ═══════════════════════════════════════════
+//  MOMENTS IMAGE
+// ═══════════════════════════════════════════
+function loadMomentsImage(input) {
+  if (!input.files[0]) return;
+  const r = new FileReader();
+  r.onload = e => {
+    momentsImageDataUrl = e.target.result;
+    document.getElementById('moments-img-thumb').src = momentsImageDataUrl;
+    document.getElementById('moments-img-thumb-wrap').classList.add('show');
+    onContentChange();
+  };
+  r.readAsDataURL(input.files[0]);
+  input.value = '';
+}
+
+function clearMomentsImage() {
+  momentsImageDataUrl = null;
+  document.getElementById('moments-img-thumb').src = '';
+  document.getElementById('moments-img-thumb-wrap').classList.remove('show');
+  onContentChange();
+}
+
+// ═══════════════════════════════════════════
+//  PLAN ROWS
+// ═══════════════════════════════════════════
+function renderPlanRows() {
+  const c = document.getElementById('plan-rows');
+  c.innerHTML = '';
+  planData.forEach((row, i) => {
+    const d = document.createElement('div');
+    d.className = 'plan-row';
+    d.innerHTML = `<input type="text" value="${row}" oninput="planData[${i}]=this.value;onContentChange()"><button class="rm-btn" onclick="removePlanRow(${i})">×</button>`;
+    c.appendChild(d);
+  });
+}
+function addPlanRow() { planData.push(''); renderPlanRows(); onContentChange(); }
+function removePlanRow(i) { planData.splice(i, 1); renderPlanRows(); onContentChange(); }
+
+// ═══════════════════════════════════════════
+//  NOTICE ROWS
+// ═══════════════════════════════════════════
+function renderNoticeRows() {
+  const c = document.getElementById('notice-rows');
+  c.innerHTML = '';
+  noticeData.forEach((item, i) => {
+    const d = document.createElement('div');
+    d.className = 'notice-row';
+    d.innerHTML = `
+      <div class="notice-row-header">
+        <input type="text" placeholder="제목 (굵게)" value="${item.title.replace(/"/g,'&quot;')}"
+          oninput="noticeData[${i}].title=this.value;onContentChange()">
+        <button class="notice-rm-btn" onclick="removeNoticeRow(${i})">×</button>
+      </div>
+      <textarea rows="2" placeholder="본문 (일반 텍스트)"
+        oninput="noticeData[${i}].body=this.value;onContentChange()">${item.body}</textarea>`;
+    c.appendChild(d);
+  });
+}
+function addNoticeRow() { noticeData.push({ title: '', body: '' }); renderNoticeRows(); onContentChange(); }
+function removeNoticeRow(i) { noticeData.splice(i, 1); renderNoticeRows(); onContentChange(); }
+
+// ═══════════════════════════════════════════
+//  CONTENT PERSISTENCE
+// ═══════════════════════════════════════════
+function onContentChange() {
+  updatePreview();
+  saveContentToStorage();
+}
+
+function saveContentToStorage() {
+  try {
+    const data = {
+      date: document.getElementById('f-date').value,
+      offering: document.getElementById('f-offering').value,
+      sermon: document.getElementById('f-sermon').value,
+      scripture: document.getElementById('f-scripture').value,
+      activity: document.getElementById('f-activity').value,
+      prayerThis: document.getElementById('f-prayer-this').value,
+      prayerNext: document.getElementById('f-prayer-next').value,
+      planMonth: document.getElementById('f-plan-month').value,
+      noticeData: noticeData.map(n => ({ ...n })),
+      footer: document.getElementById('f-footer').value,
+      planData: [...planData],
+      showWorship: document.getElementById('toggle-worship').checked,
+      showMoments: document.getElementById('toggle-moments').checked,
+      calib: { ...calib },
+    };
+    localStorage.setItem('bulletin_content', JSON.stringify(data));
+  } catch(e) { console.warn('콘텐츠 저장 실패:', e); }
+}
+
+function loadContentFromStorage() {
+  try {
+    const saved = localStorage.getItem('bulletin_content');
+    if (!saved) return false;
+    const d = JSON.parse(saved);
+    if (d.date)        document.getElementById('f-date').value = d.date;
+    if (d.offering)    document.getElementById('f-offering').value = d.offering;
+    if (d.sermon)      document.getElementById('f-sermon').value = d.sermon;
+    if (d.scripture)   document.getElementById('f-scripture').value = d.scripture;
+    if (d.activity)    document.getElementById('f-activity').value = d.activity;
+    if (d.prayerThis)  document.getElementById('f-prayer-this').value = d.prayerThis;
+    if (d.prayerNext)  document.getElementById('f-prayer-next').value = d.prayerNext;
+    if (d.planMonth)   document.getElementById('f-plan-month').value = d.planMonth;
+    if (d.noticeData) {
+      noticeData = d.noticeData;
+    } else if (d.noticeTitle || d.noticeBody || d.notice) {
+      // 구버전 호환 — 단일 광고를 배열로 변환
+      noticeData = [{ title: d.noticeTitle || '', body: d.noticeBody || d.notice || '' }];
+    }
+    renderNoticeRows();
+    if (d.footer)      document.getElementById('f-footer').value = d.footer;
+    if (d.planData)    { planData = d.planData; renderPlanRows(); }
+    if (d.showWorship !== undefined) document.getElementById('toggle-worship').checked = d.showWorship;
+    if (d.showMoments !== undefined) document.getElementById('toggle-moments').checked = d.showMoments;
+    if (d.calib) {
+      calib = { ...calib, ...d.calib };
+      document.getElementById('c-top').value = calib.top;
+      document.getElementById('c-left').value = calib.left;
+      document.getElementById('c-width').value = calib.width;
+      document.getElementById('c-bottom').value = calib.bottom;
+      document.getElementById('c-pad').value = calib.pad;
+      document.getElementById('c-gap').value = calib.gap;
+      document.getElementById('c-fontsize').value = calib.fontsize;
+      if (calib.footerBottom !== undefined)
+        document.getElementById('c-footer-bottom').value = calib.footerBottom;
+    }
+    return true;
+  } catch(e) { console.warn('콘텐츠 불러오기 실패:', e); return false; }
+}
+
+// ═══════════════════════════════════════════
+//  CALIBRATION
+// ═══════════════════════════════════════════
+function toggleCalib() { document.getElementById('calib-panel').classList.toggle('open'); }
+
+const DEFAULT_CALIB = { top: 30.5, left: 8, width: 90, bottom: 5.5, pad: 14, gap: 16, fontsize: 11.5, footerBottom: 1.3 };
+
+function resetCalib() {
+  calib = { ...DEFAULT_CALIB };
+  document.getElementById('c-top').value         = calib.top;
+  document.getElementById('c-left').value        = calib.left;
+  document.getElementById('c-width').value       = calib.width;
+  document.getElementById('c-bottom').value      = calib.bottom;
+  document.getElementById('c-pad').value         = calib.pad;
+  document.getElementById('c-gap').value         = calib.gap;
+  document.getElementById('c-fontsize').value    = calib.fontsize;
+  document.getElementById('c-footer-bottom').value = calib.footerBottom;
+  applyCalib();
+  saveContentToStorage();
+}
+
+function applyCalib() {
+  calib.top          = parseFloat(document.getElementById('c-top').value);
+  calib.left         = parseFloat(document.getElementById('c-left').value);
+  calib.width        = parseFloat(document.getElementById('c-width').value);
+  calib.bottom       = parseFloat(document.getElementById('c-bottom').value);
+  calib.pad          = parseInt(document.getElementById('c-pad').value);
+  calib.gap          = parseInt(document.getElementById('c-gap').value);
+  calib.fontsize     = parseFloat(document.getElementById('c-fontsize').value);
+  calib.footerBottom = parseFloat(document.getElementById('c-footer-bottom').value);
+
+  document.getElementById('c-top-val').textContent           = calib.top + '%';
+  document.getElementById('c-left-val').textContent          = calib.left + '%';
+  document.getElementById('c-width-val').textContent         = calib.width + '%';
+  document.getElementById('c-bottom-val').textContent        = calib.bottom + '%';
+  document.getElementById('c-pad-val').textContent           = calib.pad + 'px';
+  document.getElementById('c-gap-val').textContent           = calib.gap + 'px';
+  document.getElementById('c-fontsize-val').textContent      = calib.fontsize + 'px';
+  document.getElementById('c-footer-bottom-val').textContent = calib.footerBottom + '%';
+
+  const overlay = document.getElementById('content-overlay');
+  overlay.style.top     = calib.top + '%';
+  overlay.style.left    = calib.left + '%';
+  overlay.style.width   = calib.width + '%';
+  overlay.style.bottom  = calib.bottom + '%';
+  overlay.style.padding = calib.pad + 'px';
+
+  document.getElementById('card-footer-text').style.bottom = calib.footerBottom + '%';
+
+  updatePreview();
+}
+
+// ═══════════════════════════════════════════
+//  PREVIEW RENDER
+// ═══════════════════════════════════════════
+function updatePreview() {
+  const date       = document.getElementById('f-date').value;
+  const offering   = document.getElementById('f-offering').value;
+  const sermon     = document.getElementById('f-sermon').value;
+  const scripture  = document.getElementById('f-scripture').value;
+  const activity   = document.getElementById('f-activity').value;
+  const prayerThis = document.getElementById('f-prayer-this').value;
+  const prayerNext = document.getElementById('f-prayer-next').value;
+  const planMonth  = document.getElementById('f-plan-month').value;
+  // noticeData는 전역 배열 사용
+  const footer     = document.getElementById('f-footer').value.replace(/\n/g, '<br>');
+
+  const footerEl = document.getElementById('card-footer-text');
+  footerEl.innerHTML = footer;
+  footerEl.style.fontSize = fsB + 'px';
+
+  const gap = calib.gap;
+  const fs  = calib.fontsize;
+  const fsT = fs;                                          // 제목 볼드
+  const fsB = Math.round(fs * 0.9 * 10) / 10;             // 본문
+
+  const showWorship = document.getElementById('toggle-worship').checked;
+  const showMoments = document.getElementById('toggle-moments').checked;
+
+  document.getElementById('worship-fixed-area').style.display = showWorship ? 'block' : 'none';
+  document.getElementById('moments-area').style.display = showMoments ? 'block' : 'none';
+
+  // 예배순서
+  const worshipItems = WORSHIP_ORDER.map(w =>
+    `<div class="worship-item"><span class="w-name">${w.name}</span><span class="w-time">${w.time}</span></div>`
+  ).join('');
+  const worshipHtml = showWorship ? `
+    <div class="bul-row">
+      <div class="bul-label">예배순서</div>
+      <div class="bul-content">
+        <div class="worship-list" style="font-size:${fsT}px;">${worshipItems}</div>
+      </div>
+    </div>` : '';
+
+  // 우리들 모습
+  let momentsHtml = '';
+  if (showMoments) {
+    const imgContent = momentsImageDataUrl
+      ? `<img class="bul-moments-img" src="${momentsImageDataUrl}">`
+      : `<span style="color:#bbb;font-size:${fsB}px;font-weight:700;">사진을 업로드해 주세요</span>`;
+    momentsHtml = `
+    <div class="bul-row">
+      <div class="bul-label">우리들<br>모습</div>
+      <div class="bul-content" style="padding-top:0;">${imgContent}</div>
+    </div>`;
+  }
+
+  const planHtml = planData.filter(p => p).map(p => `<div>${p}</div>`).join('');
+
+  document.getElementById('bul-inner').innerHTML = `
+    <style>
+      #bul-inner .bul-row        { margin-bottom: ${gap}px; }
+      #bul-inner .bul-row-2col   { margin-bottom: ${gap}px; }
+      #bul-inner .bul-label      { font-size: ${fsB}px; }
+      #bul-inner .bul-content    { font-size: ${fsT}px; }
+      #bul-inner .bul-date-content, #bul-inner .bul-offering-content { font-size: ${fsT}px; }
+      #bul-inner .plan-list      { font-size: ${fsB}px; }
+    </style>
+
+    <div class="bul-row-2col" style="margin-bottom:${gap}px;">
+      <div class="bul-label">날짜</div>
+      <div class="bul-date-content">${date}</div>
+      <div class="bul-label">봉헌</div>
+      <div class="bul-offering-content">${offering}</div>
+    </div>
+
+    <div class="bul-row">
+      <div class="bul-label">설교</div>
+      <div class="bul-content"><b>${sermon}</b><br><span style="font-size:${fsB}px;">(${scripture})</span></div>
+    </div>
+
+    <div class="bul-row">
+      <div class="bul-label">2부활동</div>
+      <div class="bul-content">${activity}</div>
+    </div>
+
+    <div class="bul-row">
+      <div class="bul-label">대표기도</div>
+      <div class="bul-content">${prayerThis}(이번주) / ${prayerNext}(다음주)</div>
+    </div>
+
+    ${worshipHtml}
+    ${momentsHtml}
+
+    <div class="bul-row">
+      <div class="bul-label">${planMonth}계획</div>
+      <div class="bul-content"><div class="plan-list">${planHtml}</div></div>
+    </div>
+
+    ${noticeData.length > 0 ? `
+    <div class="bul-row">
+      <div class="bul-label">광고</div>
+      <div class="bul-content">
+        ${noticeData.map((n, i) => `
+          ${i > 0 ? `<div style="margin-top:4px;"></div>` : ''}
+          ${n.title ? `<div style="font-weight:800;font-size:${fsT}px;margin-bottom:1px;">${n.title}</div>` : ''}
+          ${n.body  ? `<div style="font-weight:500;font-size:${fsB}px;color:#333;">${n.body.replace(/\n/g,'<br>')}</div>` : ''}
+        `).join('')}
+      </div>
+    </div>` : ''}
+  `;
+}
+
+// ═══════════════════════════════════════════
+//  EXPORT
+// ═══════════════════════════════════════════
+async function exportImage() {
+  if (activeFrame < 0) { alert('먼저 프레임 이미지를 선택해 주세요!'); return; }
+  const loading = document.getElementById('loading-overlay');
+  document.getElementById('loading-text').textContent = '이미지 생성 중...';
+  loading.classList.add('show');
+  await new Promise(r => setTimeout(r, 100));
+  try {
+    const canvas = await html2canvas(document.getElementById('card-wrapper'), {
+      scale: 2.5, useCORS: true, allowTaint: true,
+      backgroundColor: null, logging: false, imageTimeout: 0,
+    });
+    const dataUrl = canvas.toDataURL('image/png');
+    const d = document.getElementById('f-date').value.replace(/[^0-9]/g, '').substring(0, 8) || '주보';
+    const filename = `하트온초등1부_주보_${d}.png`;
+
+    // 모달에 이미지 세팅
+    const modal   = document.getElementById('img-modal');
+    const imgEl   = document.getElementById('img-modal-img');
+    const dlBtn   = document.getElementById('img-modal-dl');
+    const hintEl  = document.getElementById('img-modal-hint');
+
+    imgEl.src = dataUrl;
+    dlBtn.href = dataUrl;
+    dlBtn.download = filename;
+
+    // 모바일 여부에 따라 안내 문구 변경
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    hintEl.innerHTML = isMobile
+      ? '📱 이미지를 <b>길게 눌러</b> 저장하거나<br>아래 버튼을 눌러보세요'
+      : '이미지를 확인하고 <b>이미지 저장</b> 버튼을 눌러주세요';
+
+    modal.classList.add('show');
+  } catch(e) {
+    alert('저장 오류: ' + e.message);
+  } finally {
+    loading.classList.remove('show');
+  }
+}
+
+function closeImgModal(e) {
+  // 배경(overlay) 클릭 시만 닫기
+  if (e.target === document.getElementById('img-modal')) {
+    document.getElementById('img-modal').classList.remove('show');
+  }
+}
+
+// ═══════════════════════════════════════════
+//  INIT — 저장된 데이터 복원
+// ═══════════════════════════════════════════
+loadApiKey();
+renderPlanRows();
+renderNoticeRows();
+const hadContent = loadContentFromStorage();
+const hadFrames  = loadFramesFromStorage();
+applyCalib();
+if (!hadFrames) updatePreview();   // 프레임 없으면 그냥 렌더
+</script>
+</body>
+</html>
