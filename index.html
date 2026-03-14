@@ -719,7 +719,6 @@ async function autoFillFromImage(input) {
   resultEl.className = 'autofill-result';
 
   try {
-    // 이미지를 base64로 읽기
     const dataUrl = await new Promise((res, rej) => {
       const r = new FileReader();
       r.onload = e => res(e.target.result);
@@ -769,11 +768,9 @@ JSON만 반환하고 다른 텍스트는 절대 포함하지 마세요.
 
     const result = await response.json();
     const text = result.content[0].text.trim();
-    // JSON 파싱 (마크다운 코드블록 제거)
     const jsonStr = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const data = JSON.parse(jsonStr);
 
-    // 폼 업데이트
     if (data.date)        document.getElementById('f-date').value = data.date;
     if (data.sermon)      document.getElementById('f-sermon').value = data.sermon;
     if (data.scripture)   document.getElementById('f-scripture').value = data.scripture;
@@ -834,7 +831,6 @@ function loadFramesFromStorage() {
     activeFrame = parseInt(localStorage.getItem('bulletin_active_frame') || '0');
     if (activeFrame >= frames.length) activeFrame = 0;
     renderFrameThumbs();
-    // 프레임 이미지 적용
     const bg = document.getElementById('frame-bg');
     bg.src = frames[activeFrame].dataUrl;
     bg.style.display = 'block';
@@ -1017,7 +1013,6 @@ function loadContentFromStorage() {
     if (d.noticeData) {
       noticeData = d.noticeData;
     } else if (d.noticeTitle || d.noticeBody || d.notice) {
-      // 구버전 호환 — 단일 광고를 배열로 변환
       noticeData = [{ title: d.noticeTitle || '', body: d.noticeBody || d.notice || '' }];
     }
     renderNoticeRows();
@@ -1105,17 +1100,16 @@ function updatePreview() {
   const prayerThis = document.getElementById('f-prayer-this').value;
   const prayerNext = document.getElementById('f-prayer-next').value;
   const planMonth  = document.getElementById('f-plan-month').value;
-  // noticeData는 전역 배열 사용
   const footer     = document.getElementById('f-footer').value.replace(/\n/g, '<br>');
+
+  const gap = calib.gap;
+  const fs  = calib.fontsize;
+  const fsT = fs;
+  const fsB = Math.round(fs * 0.9 * 10) / 10;
 
   const footerEl = document.getElementById('card-footer-text');
   footerEl.innerHTML = footer;
   footerEl.style.fontSize = fsB + 'px';
-
-  const gap = calib.gap;
-  const fs  = calib.fontsize;
-  const fsT = fs;                                          // 제목 볼드
-  const fsB = Math.round(fs * 0.9 * 10) / 10;             // 본문
 
   const showWorship = document.getElementById('toggle-worship').checked;
   const showMoments = document.getElementById('toggle-moments').checked;
@@ -1123,7 +1117,6 @@ function updatePreview() {
   document.getElementById('worship-fixed-area').style.display = showWorship ? 'block' : 'none';
   document.getElementById('moments-area').style.display = showMoments ? 'block' : 'none';
 
-  // 예배순서
   const worshipItems = WORSHIP_ORDER.map(w =>
     `<div class="worship-item"><span class="w-name">${w.name}</span><span class="w-time">${w.time}</span></div>`
   ).join('');
@@ -1135,7 +1128,6 @@ function updatePreview() {
       </div>
     </div>` : '';
 
-  // 우리들 모습
   let momentsHtml = '';
   if (showMoments) {
     const imgContent = momentsImageDataUrl
@@ -1222,7 +1214,6 @@ async function exportImage() {
     const d = document.getElementById('f-date').value.replace(/[^0-9]/g, '').substring(0, 8) || '주보';
     const filename = `하트온초등1부_주보_${d}.png`;
 
-    // 모달에 이미지 세팅
     const modal   = document.getElementById('img-modal');
     const imgEl   = document.getElementById('img-modal-img');
     const dlBtn   = document.getElementById('img-modal-dl');
@@ -1232,7 +1223,6 @@ async function exportImage() {
     dlBtn.href = dataUrl;
     dlBtn.download = filename;
 
-    // 모바일 여부에 따라 안내 문구 변경
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     hintEl.innerHTML = isMobile
       ? '📱 이미지를 <b>길게 눌러</b> 저장하거나<br>아래 버튼을 눌러보세요'
@@ -1247,7 +1237,6 @@ async function exportImage() {
 }
 
 function closeImgModal(e) {
-  // 배경(overlay) 클릭 시만 닫기
   if (e.target === document.getElementById('img-modal')) {
     document.getElementById('img-modal').classList.remove('show');
   }
@@ -1262,7 +1251,7 @@ renderNoticeRows();
 const hadContent = loadContentFromStorage();
 const hadFrames  = loadFramesFromStorage();
 applyCalib();
-if (!hadFrames) updatePreview();   // 프레임 없으면 그냥 렌더
+if (!hadFrames) updatePreview();
 </script>
 </body>
 </html>
