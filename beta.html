@@ -173,12 +173,6 @@ body {
 .autofill-changes.show { display: block; }
 .autofill-changes .warn { color: #c62828; font-weight: 700; margin-bottom: 4px; }
 .autofill-changes .same { color: #999; }
-.idea-box { display: none; margin-bottom: 8px; }
-.idea-box.show { display: block; }
-.idea-label { font-size: 11px; color: #888; margin-bottom: 5px; }
-.idea-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.idea-chip { border: 1.5px dashed #6dbe6d; background: #f3faf3; color: #2e7d32; border-radius: 14px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
-.idea-chip.added { border-style: solid; background: #6dbe6d; color: white; cursor: default; }
 .just-filled { background: #fff8d6 !important; border-color: #f5c518 !important; }
 
 /* ─── FORM ─── */
@@ -508,7 +502,7 @@ body {
         <button class="autofill-btn autofill-paste" id="autofill-paste-btn" onclick="pasteFromClipboard()">📋 붙여넣기</button>
       </div>
       <input type="file" id="autofill-img-input" accept="image/*,application/pdf" style="display:none" onchange="autoFillFromImage(this)">
-      <div class="autofill-note">날짜·설교·봉헌·2부활동·대표기도·월계획이 한 번에 채워져요. 노랗게 바뀐 칸만 확인하면 돼요.</div>
+      <div class="autofill-note">날짜·설교 제목·말씀·대표기도·봉헌·2부 순서·월계획만 채워요. 사진·안내 멘트는 그대로 둬요.</div>
       <div class="autofill-result" id="autofill-result"></div>
       <div class="autofill-changes" id="autofill-changes"></div>
     </div>
@@ -601,10 +595,6 @@ body {
     <button class="add-row-btn" onclick="addPlanRow()">＋ 계획 추가</button>
 
     <div class="sec-header"><span>📢 광고</span></div>
-    <div class="idea-box" id="idea-box">
-      <div class="idea-label">회의록에서 찾은 후보 — 누르면 광고에 추가돼요</div>
-      <div class="idea-chips" id="idea-chips"></div>
-    </div>
     <div class="notice-rows" id="notice-rows"></div>
     <button class="add-row-btn" onclick="addNoticeRow()">＋ 광고 추가</button>
 
@@ -728,9 +718,8 @@ function loadApiKey() {
   }
 }
 
-const AUTOFILL_PROMPT = "이 자료는 교회 초등부 「교사회의록」입니다. 학부모에게 보내는 주보에 들어갈 내용만 뽑아 주세요.\n\n- date: 회의록 머리의 예배 날짜. 형식 \"2026년 10월 18일\" (요일·'주일' 붙이지 않음)\n- weekOfMonth: 머리의 \"(N주차)\" 숫자\n- sermon: 「이번 주 준비사항」 설교 제목만 (과 번호·따옴표 빼기). 예: 피할 수 없는 고난이 왔어요\n- scripture: 설교 성경 본문, 괄호 빼고. 예: 단 3:19-30\n- offering: 이번 주 봉헌자 이름\n- activity: 이번 주 「2부 순서」 내용 그대로\n- prayerThis: 이번 주 대표기도자 이름\n- prayerNext: 「다음 주 준비사항」 대표기도자 이름\n- planMonth: 날짜가 속한 달 숫자\n- monthPlan: 「월별 분기별 교육계획」에서 그 달의 주차별 계획 전부(취소선 그어진 지난 주차 포함). week=주차 숫자, text=활동 이름 그대로\n- noticeIdeas: 학부모 광고로 쓸 만한 것 후보. 이번 주 광고 줄에서 아이 이름이 있는 항목(예: 꿈끼 자랑 출연자), 그 달의 기관 행사(예: 바자회·대회). 교사 전용(교사 위로회, 교사모임기도, 결석자)은 넣지 않음. 매주 반복하는 '새친구 소개', '생일 축하'는 넣지 않음. 회의록 말 그대로 짧게.\n\n글자가 흐리거나 없으면 빈 문자열로 두세요. 지어내지 마세요.";
-const AUTOFILL_SCHEMA = {"type": "object", "properties": {"date": {"type": "string"}, "weekOfMonth": {"type": "integer"}, "sermon": {"type": "string"}, "scripture": {"type": "string"}, "offering": {"type": "string"}, "activity": {"type": "string"}, "prayerThis": {"type": "string"}, "prayerNext": {"type": "string"}, "planMonth": {"type": "integer"}, "monthPlan": {"type": "array", "items": {"type": "object", "properties": {"week": {"type": "integer"}, "text": {"type": "string"}}, "required": ["week", "text"], "additionalProperties": false}}, "noticeIdeas": {"type": "array", "items": {"type": "string"}}}, "required": ["date", "weekOfMonth", "sermon", "scripture", "offering", "activity", "prayerThis", "prayerNext", "planMonth", "monthPlan", "noticeIdeas"], "additionalProperties": false};
-let noticeIdeas = [];
+const AUTOFILL_PROMPT = "이 자료는 교회 초등부 「교사회의록」입니다. 학부모에게 보내는 주보에 들어갈 내용만 뽑아 주세요.\n\n- date: 회의록 머리의 예배 날짜. 형식 \"2026년 10월 18일\" (요일·'주일' 붙이지 않음)\n- weekOfMonth: 머리의 \"(N주차)\" 숫자\n- sermon: 「이번 주 준비사항」 설교 제목만 (과 번호·따옴표 빼기). 예: 피할 수 없는 고난이 왔어요\n- scripture: 설교 성경 본문, 괄호 빼고. 예: 단 3:19-30\n- offering: 이번 주 봉헌자 이름\n- activity: 이번 주 「2부 순서」 내용 그대로\n- prayerThis: 이번 주 대표기도자 이름\n- prayerNext: 「다음 주 준비사항」 대표기도자 이름\n- planMonth: 날짜가 속한 달 숫자\n- monthPlan: 「월별 분기별 교육계획」에서 그 달의 주차별 계획 전부(취소선 그어진 지난 주차 포함). week=주차 숫자, text=활동 이름 그대로\n\n글자가 흐리거나 없으면 빈 문자열로 두세요. 지어내지 마세요.";
+const AUTOFILL_SCHEMA = {"type": "object", "properties": {"date": {"type": "string"}, "weekOfMonth": {"type": "integer"}, "sermon": {"type": "string"}, "scripture": {"type": "string"}, "offering": {"type": "string"}, "activity": {"type": "string"}, "prayerThis": {"type": "string"}, "prayerNext": {"type": "string"}, "planMonth": {"type": "integer"}, "monthPlan": {"type": "array", "items": {"type": "object", "properties": {"week": {"type": "integer"}, "text": {"type": "string"}}, "required": ["week", "text"], "additionalProperties": false}}}, "required": ["date", "weekOfMonth", "sermon", "scripture", "offering", "activity", "prayerThis", "prayerNext", "planMonth", "monthPlan"], "additionalProperties": false};
 let lastExportFile = null;
 
 function autoFillFromImage(input) {
@@ -883,8 +872,6 @@ async function runAutoFill(file) {
       changes.push(`<b>월계획</b>: ${weeks.join(' · ')}`);
     }
 
-    noticeIdeas = (data.noticeIdeas || []).map(s => s.trim()).filter(Boolean);
-    renderNoticeIdeas();
 
     // 회의록 날짜가 이번 주일과 다르면 알려준다 (지난주 회의록을 잘못 올린 경우)
     let warn = '';
@@ -896,9 +883,7 @@ async function runAutoFill(file) {
         warn = `<div class="warn">⚠️ 회의록 날짜(${+m[2]}월 ${+m[3]}일)가 이번 주일(${sun.getMonth() + 1}월 ${sun.getDate()}일)과 달라요. 맞는 회의록인지 확인해 주세요.</div>`;
       }
     }
-    const ideaLine = noticeIdeas.length ? `<br>📢 광고 후보 ${noticeIdeas.length}개 — 아래 광고 칸에서 눌러 추가` : '';
-    changesEl.innerHTML = warn + changes.join('<br>') + ideaLine
-      + '<br><span class="same">광고·사진은 지난주 그대로예요. 바꿀 것만 고치세요.</span>';
+    changesEl.innerHTML = warn + changes.join('<br>');
     changesEl.className = 'autofill-changes show';
     resultEl.textContent = '✅ 자동 입력 완료 — 노란 칸을 확인해 주세요';
     resultEl.className = 'autofill-result ok';
@@ -911,25 +896,6 @@ async function runAutoFill(file) {
     loading.classList.remove('show');
     btn.disabled = false;
   }
-}
-function renderNoticeIdeas() {
-  const box = document.getElementById('idea-box');
-  const c = document.getElementById('idea-chips');
-  c.innerHTML = '';
-  noticeIdeas.forEach(idea => {
-    const added = noticeData.some(n => n.title === idea);
-    const b = document.createElement('button');
-    b.className = 'idea-chip' + (added ? ' added' : '');
-    b.textContent = (added ? '✓ ' : '＋ ') + idea;
-    if (!added) b.onclick = () => {
-      noticeData.push({ title: idea, body: '' });
-      renderNoticeRows();
-      renderNoticeIdeas();
-      onContentChange();
-    };
-    c.appendChild(b);
-  });
-  box.className = 'idea-box' + (noticeIdeas.length ? ' show' : '');
 }
 function compressImage(dataUrl, maxWidth = 600) {
   return new Promise(res => {
@@ -1092,7 +1058,7 @@ function renderNoticeRows() {
   });
 }
 function addNoticeRow() { noticeData.push({ title: '', body: '' }); renderNoticeRows(); onContentChange(); }
-function removeNoticeRow(i) { noticeData.splice(i, 1); renderNoticeRows(); renderNoticeIdeas(); onContentChange(); }
+function removeNoticeRow(i) { noticeData.splice(i, 1); renderNoticeRows(); onContentChange(); }
 
 function onContentChange() {
   updatePreview();
@@ -1113,7 +1079,6 @@ function saveContentToStorage() {
       noticeData: noticeData.map(n => ({ ...n })),
       footer: document.getElementById('f-footer').value,
       planData: [...planData],
-      noticeIdeas: [...noticeIdeas],
       showWorship: document.getElementById('toggle-worship').checked,
       showMoments: document.getElementById('toggle-moments').checked,
       calib: { ...calib },
@@ -1143,7 +1108,6 @@ function loadContentFromStorage() {
     renderNoticeRows();
     if (d.footer)      document.getElementById('f-footer').value = d.footer;
     if (d.planData)    { planData = d.planData; renderPlanRows(); }
-    if (d.noticeIdeas) { noticeIdeas = d.noticeIdeas; renderNoticeIdeas(); }
     if (d.showWorship !== undefined) document.getElementById('toggle-worship').checked = d.showWorship;
     if (d.showMoments !== undefined) document.getElementById('toggle-moments').checked = d.showMoments;
     if (d.calib) {
